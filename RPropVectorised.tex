@@ -1,0 +1,55 @@
+\documentclass[11pt,oneside,a4paper]{scrartcl} %11pt+=oneside
+\usepackage{a4}
+\linespread{1.2}
+
+\usepackage[ngerman]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\renewcommand{\S}{\mathbb{S}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\J}{\mathbb{J}}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{algorithm}
+\caption{iRprop+}\label{iRprop+}
+\begin{algorithmic}[1]
+\Procedure{Init}{}\Comment{The usual and convenient initialisations}
+\State $\Delta_w = 0; \Delta = \mathbb{P} = \mathbb{Q} = 1; E_{-1}=0$
+\State $\eta^+ = 1.2, \eta^- = 0.5, \Delta_{max} = 50, \Delta_{min}= 10^{-6}$
+\EndProcedure
+\Procedure{Rprop}{$\nabla_wE,g = \delta_{E>E^{old}?},\Delta^{old},\Delta^{old}_w$}\\
+\Comment{$\nabla_wE$ from Backpropagation}
+\Comment{we can calculate $g$ immediately when the output error has been determined, no need to do it here :)}
+\State $\Q\gets \P$
+\State $\P\gets \mathit{sgn}(\nabla_wE)$ \Comment{All input from Backprop we'll ever need}
+\State $\S\gets \P\bigodot \Q$ \Comment{Have derivative signs changed from last Backprop?}
+\State $\I_+ \gets \left( \begin{cases}
+1 & \mathit{~~if~}\S_{i,j} = 1 \\ 0 &\mathit{~~else~} 
+\end{cases}\right)_{i,j}$
+\State $\I_- \gets \left( \begin{cases}
+1 & \mathit{~~if~}\S_{i,j} = -1 \\ 0 &\mathit{~~else~} 
+\end{cases}\right)_{i,j}$
+\State $\I_0 \gets \left( \begin{cases}
+1 & \mathit{~~if~}\S_{i,j} = 0 \\ 0 &\mathit{~~else~} 
+\end{cases}\right)_{i,j}$\\
+
+\State $\J \gets \eta^+\I_+ + \eta^-\I_- + \I_0$
+\State $\Delta \gets \J\odot\Delta$
+\State $\Delta \gets \min(\Delta, \Delta_{max})$
+\State $\Delta \gets \max(\Delta, \Delta_{min})$
+
+\State $\Delta_w = (1-\I_-)\odot \P \odot \Delta + g\I_- \odot \Delta^{old}_w$
+\State $w = w- \Delta_w$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+\end{document}
